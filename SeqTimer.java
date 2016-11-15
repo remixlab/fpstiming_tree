@@ -14,176 +14,163 @@ package remixlab.fpstiming;
  * Sequential timers are single-threaded timers handled by a TimingHandler.
  */
 public class SeqTimer implements Timer {
-  protected Taskable task;
-  protected TimingHandler handler;
-  protected boolean active;
-  protected boolean runOnlyOnce;
-  private long counter;
-  private long prd;
-  private long startTime;
+ protected Taskable task;
+ protected TimingHandler handler;
+ protected boolean active;
+ protected boolean runOnlyOnce;
+ private long counter;
+ private long prd;
+ private long startTime;
 
-  /**
-   * Defines a single shot sequential (single-threaded) timer.
-   * 
-   * @param h
-   *          timing handler owner
-   */
-  public SeqTimer(TimingHandler h) {
-    this(h, false, null);
-  }
+ /**
+  * Defines a single shot sequential (single-threaded) timer.
+  *
+  * @param h timing handler owner
+  */
+ public SeqTimer(TimingHandler h) {
+  this(h, false, null);
+ }
 
-  /**
-   * Defines a sequential (single-threaded) timer.
-   * 
-   * @param h
-   *          timing handler owner
-   * @param singleShot
-   */
-  public SeqTimer(TimingHandler h, boolean singleShot) {
-    this(h, singleShot, null);
-  }
+ /**
+  * Defines a sequential (single-threaded) timer.
+  *
+  * @param h          timing handler owner
+  * @param singleShot
+  */
+ public SeqTimer(TimingHandler h, boolean singleShot) {
+  this(h, singleShot, null);
+ }
 
-  public SeqTimer(TimingHandler h, Taskable t) {
-    this(h, false, t);
-  }
+ public SeqTimer(TimingHandler h, Taskable t) {
+  this(h, false, t);
+ }
 
-  public SeqTimer(TimingHandler h, boolean singleShot, Taskable t) {
-    handler = h;
-    runOnlyOnce = singleShot;
-    task = t;
-    create();
-  }
+ public SeqTimer(TimingHandler h, boolean singleShot, Taskable t) {
+  handler = h;
+  runOnlyOnce = singleShot;
+  task = t;
+  create();
+ }
 
-  @Override
-  public Taskable timingTask() {
-    return task;
-  }
+ @Override public Taskable timingTask() {
+  return task;
+ }
 
-  /**
-   * Executes the callback method defined by the {@link #timingTask()}.
-   * <p>
-   * <b>Note:</b> You should not call this method since it's done by the timing handler
-   * (see {@link remixlab.fpstiming.TimingHandler#handle()}).
-   */
-  protected boolean execute() {
-    boolean result = trigggered();
-    if (result) {
-      timingTask().execute();
-      if (runOnlyOnce)
-        inactivate();
-    }
-    return result;
-  }
-
-  @Override
-  public void cancel() {
-    stop();
-    handler.unregisterTask(this);
-  }
-
-  @Override
-  public void create() {
+ /**
+  * Executes the callback method defined by the {@link #timingTask()}.
+  * <p>
+  * <b>Note:</b> You should not call this method since it's done by the timing handler
+  * (see {@link remixlab.fpstiming.TimingHandler#handle()}).
+  */
+ protected boolean execute() {
+  boolean result = trigggered();
+  if (result) {
+   timingTask().execute();
+   if (runOnlyOnce)
     inactivate();
   }
+  return result;
+ }
 
-  @Override
-  public void run(long period) {
-    setPeriod(period);
-    run();
-  }
+ @Override public void cancel() {
+  stop();
+  handler.unregisterTask(this);
+ }
 
-  @Override
-  public void run() {
-    if (prd <= 0)
-      return;
-    inactivate();
-    counter = 1;
-    active = true;
-    startTime = System.currentTimeMillis();
-  }
+ @Override public void create() {
+  inactivate();
+ }
 
-  @Override
-  public void stop() {
-    inactivate();
-  }
+ @Override public void run(long period) {
+  setPeriod(period);
+  run();
+ }
 
-  @Override
-  public boolean isActive() {
-    return active;
-  }
+ @Override public void run() {
+  if (prd <= 0)
+   return;
+  inactivate();
+  counter = 1;
+  active = true;
+  startTime = System.currentTimeMillis();
+ }
 
-  // others
+ @Override public void stop() {
+  inactivate();
+ }
 
-  /**
-   * Deactivates the SeqTimer.
-   */
-  public void inactivate() {
-    active = false;
-  }
+ @Override public boolean isActive() {
+  return active;
+ }
 
-  /**
-   * Returns {@code true} if the timer was triggered at the given frame.
-   * <p>
-   * <b>Note:</b> You should not call this method since it's done by the timing handler
-   * (see {@link remixlab.fpstiming.TimingHandler#handle()}).
-   */
-  public boolean trigggered() {
-    if (!active)
-      return false;
+ // others
 
-    long elapsedTime = System.currentTimeMillis() - startTime;
+ /**
+  * Deactivates the SeqTimer.
+  */
+ public void inactivate() {
+  active = false;
+ }
 
-    float timePerFrame = (1 / handler.frameRate()) * 1000;
-    long threshold = counter * prd;
+ /**
+  * Returns {@code true} if the timer was triggered at the given frame.
+  * <p>
+  * <b>Note:</b> You should not call this method since it's done by the timing handler
+  * (see {@link remixlab.fpstiming.TimingHandler#handle()}).
+  */
+ public boolean trigggered() {
+  if (!active)
+   return false;
 
-    boolean result = false;
-    if (threshold >= elapsedTime) {
-      long diff = elapsedTime + (long) timePerFrame - threshold;
-      if (diff >= 0) {
-        if ((threshold - elapsedTime) < diff) {
-          result = true;
-        }
-      }
-    } else {
-      result = true;
+  long elapsedTime = System.currentTimeMillis() - startTime;
+
+  float timePerFrame = (1 / handler.frameRate()) * 1000;
+  long threshold = counter * prd;
+
+  boolean result = false;
+  if (threshold >= elapsedTime) {
+   long diff = elapsedTime + (long) timePerFrame - threshold;
+   if (diff >= 0) {
+    if ((threshold - elapsedTime) < diff) {
+     result = true;
     }
-
-    if (result) {
-      counter++;
-      // if (prd < timePerFrame)
-      // System.out.println("Your current frame rate (~" + handler.frameRate() +
-      // " fps) is not high enough " + "to run the timer and reach the specified
-      // " + prd + " ms period, "
-      // + timePerFrame
-      // + " ms period will be used instead. If you want to sustain a lower
-      // timer " +
-      // "period, define a higher frame rate (minimum of " + 1000f / prd + "
-      // fps) " +
-      // "before running the timer (you may need to simplify your drawing to
-      // achieve it.)");
-
-    }
-
-    return result;
+   }
+  } else {
+   result = true;
   }
 
-  @Override
-  public long period() {
-    return prd;
+  if (result) {
+   counter++;
+   // if (prd < timePerFrame)
+   // System.out.println("Your current frame rate (~" + handler.frameRate() +
+   // " fps) is not high enough " + "to run the timer and reach the specified
+   // " + prd + " ms period, "
+   // + timePerFrame
+   // + " ms period will be used instead. If you want to sustain a lower
+   // timer " +
+   // "period, define a higher frame rate (minimum of " + 1000f / prd + "
+   // fps) " +
+   // "before running the timer (you may need to simplify your drawing to
+   // achieve it.)");
+
   }
 
-  @Override
-  public void setPeriod(long period) {
-    prd = period;
-  }
+  return result;
+ }
 
-  @Override
-  public boolean isSingleShot() {
-    return runOnlyOnce;
-  }
+ @Override public long period() {
+  return prd;
+ }
 
-  @Override
-  public void setSingleShot(boolean singleShot) {
-    runOnlyOnce = singleShot;
-  }
+ @Override public void setPeriod(long period) {
+  prd = period;
+ }
+
+ @Override public boolean isSingleShot() {
+  return runOnlyOnce;
+ }
+
+ @Override public void setSingleShot(boolean singleShot) {
+  runOnlyOnce = singleShot;
+ }
 }
