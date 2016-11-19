@@ -16,85 +16,85 @@ package remixlab.fpstiming;
  * implement.
  */
 public abstract class TimingTask implements Taskable {
- protected Timer tmr;
+  protected Timer tmr;
 
- /**
-  * Returns the timer instance.
-  */
- public Timer timer() {
-  return tmr;
- }
-
- /**
-  * Sets the timer instance.
-  */
- public void setTimer(Timer t) {
-  tmr = t;
- }
-
- // Wrappers
-
- /**
-  * Timer wrapper method.
-  */
- public void run(long period) {
-  if (timer() != null) {
-   timer().setSingleShot(false);
-   timer().run(period);
+  /**
+   * Returns the timer instance.
+   */
+  public Timer timer() {
+    return tmr;
   }
- }
 
- /**
-  * Timer wrapper method.
-  */
- public void runOnce(long period) {
-  if (timer() != null) {
-   timer().setSingleShot(true);
-   timer().run(period);
+  /**
+   * Sets the timer instance.
+   */
+  public void setTimer(Timer t) {
+    tmr = t;
   }
- }
 
- /**
-  * Timer wrapper method.
-  */
- public void stop() {
-  if (timer() != null) {
-   timer().stop();
+  // Wrappers
+
+  /**
+   * Timer wrapper method.
+   */
+  public void run(long period) {
+    if (timer() != null) {
+      timer().setSingleShot(false);
+      timer().run(period);
+    }
   }
- }
 
- /**
-  * Timer wrapper method.
-  */
- public void cancel() {
-  if (timer() != null) {
-   timer().cancel();
+  /**
+   * Timer wrapper method.
+   */
+  public void runOnce(long period) {
+    if (timer() != null) {
+      timer().setSingleShot(true);
+      timer().run(period);
+    }
   }
- }
 
- /**
-  * Timer wrapper method.
-  */
- public void create() {
-  if (timer() != null) {
-   timer().create();
+  /**
+   * Timer wrapper method.
+   */
+  public void stop() {
+    if (timer() != null) {
+      timer().stop();
+    }
   }
- }
 
- /**
-  * Timer wrapper method.
-  */
- public boolean isActive() {
-  if (timer() != null) {
-   return timer().isActive();
+  /**
+   * Timer wrapper method.
+   */
+  public void cancel() {
+    if (timer() != null) {
+      timer().cancel();
+    }
   }
-  return false;
- }
 
- /**
-  * Timer wrapper method.
-  */
- public long period() {
-  return timer().period();
- }
+  /**
+   * Timer wrapper method.
+   */
+  public void create() {
+    if (timer() != null) {
+      timer().create();
+    }
+  }
+
+  /**
+   * Timer wrapper method.
+   */
+  public boolean isActive() {
+    if (timer() != null) {
+      return timer().isActive();
+    }
+    return false;
+  }
+
+  /**
+   * Timer wrapper method.
+   */
+  public long period() {
+    return timer().period();
+  }
 }
